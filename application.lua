@@ -2,16 +2,6 @@ local module = {}
 
 m = nil
 
-colors = {}
-colors["off"]    = "000,000,000"
-colors["orange"] = "255,064,000"
-colors["yellow"] = "255,255,000"
-colors["red"]    = "255,000,000"
-colors["green"]  = "000,255,000"
-colors["blue"]   = "000,000,255"
-colors["purple"] = "255,000,255"
-colors["white"]  = "255,255,255"
-
 local function send_ping()
     if m ~= nil then
         m:publish(config.ENDPOINT .. "ping", "id=" .. config.ID, 0, 0)
@@ -30,21 +20,14 @@ local function led_update(r, g, b)
     pwm.setduty(config.PIN_BLU, b*1023/255)
 end
 
-local function rgbcolor(c)
+local function rgbcolor(color)
     local r, g, b
-    local setthem = "000,000,000"
 
-    if c then
-        if colors[c] then
-            setthem = colors[c]
-        end
-    end
+    r = string.sub(color,1,3)
+    g = string.sub(color,5,7)
+    b = string.sub(color,9,11)
 
-    r = string.sub(setthem,1,3)
-    g = string.sub(setthem,5,7)
-    b = string.sub(setthem,9,11)
-
-    led_update(r,g,b)
+    return {red = r, green = g, blue = b}
 end
 
 local function mqtt_start()
@@ -55,12 +38,10 @@ local function mqtt_start()
             print(topic .. ": " .. data)
         end
 
-        if data == "ping" then
-            m:publish(config.ENDPOINT .. "ping", "pong", 0, 0)
-        end
-
         if topic == config.ENDPOINT .. config.ID .. "/dishwasher/1" then
-            rgbcolor(data)
+                local rgbObj = rgbcolor(data)
+
+                led_update(rgbObj.red, rgbObj.green, rgbObj.blue)
         end
     end)
 
