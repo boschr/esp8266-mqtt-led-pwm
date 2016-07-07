@@ -39,9 +39,11 @@ local function mqtt_start()
         end
 
         if topic == config.ENDPOINT .. config.ID .. "/dishwasher/1" then
+            if string.match(data, "(%d%d%d),(%d%d%d),(%d%d%d)") then
                 local rgbObj = rgbcolor(data)
 
                 led_update(rgbObj.red, rgbObj.green, rgbObj.blue)
+            end
         end
     end)
 
